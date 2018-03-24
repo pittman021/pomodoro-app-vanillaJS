@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+#main {
+  font-family: 'Nunito', serif;
+  font-size: 3em;
+  margin-bottom: 20px;
+}
+
+.tasks {
+  text-align: center;
+}
+
+.input {
+  height: 75px;
+  font-family: 'Montserrat', sans-serif;
+  box-shadow: none;
+}
+
+.timer {
+  margin: 0 auto;
+  margin-bottom: 20px;
+  width: 90%;
+  text-align: center;
+  font-size: 2em;
+}
+
+.stats {
+  text-align: center;
+}
+
+.timer button:hover {
+  color: #fff;
+  background-color: #226fbe;
+}
+
+.timer button {
+  width: 200px;
+  height: 75px;
+  margin: 10px 10px;
+  font-weight: 700;
+  transition-duration: 0.3s;
+}
+
+.timer-time {
+  margin-bottom: 25px;
+}
+
+.minutes {
+  margin-right: 10px;
+}
+
+.task-list {
+  width: 75%;
+  margin: 0 auto;
+  font-size: 16px;
+}
+
+.panel-block i {
+  padding-left: 10px;
+}
+
+.panel-block .pull-right {
+  width: 15%;
+}
+
+.panel-block .pull-left {
+  width: 85%;
+  text-align: left;
+}
+
+.panel-tabs:first-child {
+  border-top: none !important;
+}
+
+.panel-tabs a:hover {
+  border-bottom: solid 1px;
+}
+
+.open-task-list {
+  margin-bottom: 5px;
+}
+
+.red {
+  color: red !important;
+}
+
+.blue {
+  color: #1496ed;
+}
+
+.pull-left i {
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+
+i.fa {
+  color: black;
+}
+
+.clear-all {
+  font-size: 0.875em;
+  text-align: center;
+}
