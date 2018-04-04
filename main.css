@@ -1,52 +1,123 @@
-body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+html {
+  background-color: #faf8f8 !important;
 }
 
 #main {
   font-family: 'Nunito', serif;
+  color: #888d94;
   font-size: 3em;
   margin-bottom: 20px;
 }
+
+#todo {
+  margin-top: 103px;
+  margin: 103px 20px 10px 20px;
+}
+
+/* --- TIMER STYLES --- */
+
+.navbar {
+  box-shadow: 0px 2px 7px 0px #dbdbdb;
+}
+
+.timer {
+  margin: 0 auto;
+  font-size: 2em;
+  max-width: 175px;
+}
+
+.timer-time {
+  float: left;
+  width: 120px;
+}
+
+.timer-control {
+  float: right;
+}
+
+#clock svg.svg-inline--fa {
+  font-size: 24px;
+  margin-top: -5px;
+}
+
+#clock svg.svg-inline--fa:hover {
+  color: #fd6b1c !important;
+}
+
+svg#pause {
+  margin-left: 5px;
+}
+
+.config-gear {
+  position: fixed;
+  font-size: 20px;
+  top: 20px;
+  right: 20px;
+  color: 434041;
+}
+
+.config-gear:hover {
+  font-size: 22px;
+  color: #fd6b1c !important;
+  /*-webkit-transition: color 0.5s, font-size 0.5s;
+  transition: color 0.5s, font-size 0.5s;*/
+}
+
+/* INPUT STYLES */
+
+input.input.is-large::placeholder {
+  color: #b5b5b5;
+}
+
+input.input.is-large::placeholder:active {
+  color: #b5b5b5;
+}
+
+input.input.is-large {
+  color: #434041;
+  background-color: #faf8f8;
+  box-shadow: none;
+}
+
+#task-input {
+  width: 78%;
+  margin-right: 1%;
+  display: inline;
+}
+
+/* Task Styles */
 
 .tasks {
   text-align: center;
 }
 
-.input {
-  height: 75px;
-  font-family: 'Montserrat', sans-serif;
-  box-shadow: none;
+.tags {
+  margin-bottom: 0px;
 }
 
-.timer {
-  margin: 0 auto;
-  margin-bottom: 20px;
-  width: 90%;
-  text-align: center;
-  font-size: 2em;
+#tag-input {
+  width: 17%;
+  margin-right: 5px;
+  margin-left: 1%;
+}
+
+a {
+  color: #434041 !important;
+}
+
+a:hover {
+  font-weight: bold;
+  color: #fd6b1c !important;
+  -webkit-transition: color 0.5s, font-weight 0.5s;
+  transition: color 0.5s;
+}
+
+.panel-block {
+  color: #434041 !important;
 }
 
 .stats {
   text-align: center;
-}
-
-.timer button:hover {
-  color: #fff;
-  background-color: #226fbe;
-}
-
-.timer button {
-  width: 200px;
-  height: 75px;
-  margin: 10px 10px;
-  font-weight: 700;
-  transition-duration: 0.3s;
-}
-
-.timer-time {
-  margin-bottom: 25px;
 }
 
 .minutes {
@@ -64,32 +135,28 @@ body {
 }
 
 .panel-block .pull-right {
-  width: 15%;
+  width: 10%;
 }
 
 .panel-block .pull-left {
-  width: 85%;
+  width: 90%;
   text-align: left;
 }
 
 .panel-tabs:first-child {
   border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
 }
 
 .panel-tabs a:hover {
   border-bottom: solid 1px;
 }
 
-.open-task-list {
-  margin-bottom: 5px;
-}
-
-.red {
-  color: red !important;
-}
-
-.blue {
-  color: #1496ed;
+.tab-active {
+  font-weight: bold;
+  color: #fd6b1c !important;
+  border-bottom: solid 1px !important;
 }
 
 .pull-left i {
