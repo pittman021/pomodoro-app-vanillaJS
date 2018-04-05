@@ -3,12 +3,14 @@ var render = function(template, elem) {
   elem.innerHTML = typeof template === 'function' ? template() : template;
 };
 
+// Component Class  //
 var Component = function(template, props, elem) {
   this.elem = elem;
   this.state = props;
   this.template = template;
 };
 
+// Component prototype methods //
 Component.prototype = {
   constructor: Component,
   setState: function(props, cb) {
@@ -25,17 +27,23 @@ Component.prototype = {
     // Return the elem for use elsewhere
     return this.elem;
   },
+  //
   render: function() {
     if (!this.elem) return;
     this.elem.innerHTML = typeof this.template === 'function' ? this.template() : this.template;
   }
 };
 
+// Retrieves initial app state
 var getInitialState = function() {
+  // Default pomodoro duration & break duration settings //
   const defaultConfig = { duration: 1000 * 60 * 25, break: 1000 * 60 * 5 };
+  // Cached settings from localStorage //
   const cachedConfig = JSON.parse(localStorage.getItem('config'));
+  // checking for one or the other config options //
   const config = !cachedConfig ? defaultConfig : cachedConfig;
 
+  // creating initial state object with settings //
   const state = {
     config: config,
     isBreak: false,
@@ -47,58 +55,180 @@ var getInitialState = function() {
   return state;
 };
 
+//# Stateless Templates
+//##
+//####
+
+var startButton = function() {
+  return `<i onclick=Clock.startClock() class="fas fa-play small"></i>`;
+};
+
+var pauseButton = function() {
+  return `<i onClick=Clock.pauseClock(event) id="pause" class="fas fa-pause"></i>`;
+};
+
+var stopButton = function() {
+  return `<i onClick=Clock.stopClock(event) class="fas fa-stop"></i>`;
+};
+
+var input = function(props) {
+  return `
+  		<form class="todo-input" onsubmit="ToDoList.addTask(event)">
+            <input name="tagname" id="tag-input" placeholder="Tag" class="input is-large" />
+            <span>
+  	        <input
+              id="task-input"
+  	          placeholder="Add A Task"
+  	          name="taskname"
+  	          class="input is-large"
+  	        />
+            <input style="display:none" type="submit"></input>
+          </span>
+  	  </form>
+
+      `;
+};
+
+function taskList(props) {
+  const isActive = ToDoList.state.taskView;
+
+  this.renderTasks = function(props) {
+    var tasks = props.map(taskItem).join('');
+    return `${tasks}`;
+  };
+  return `
+    <div class="open-task-list">
+      <nav class="panel">
+        <p class="panel-tabs">
+          <a class=${isActive === 'open' ? 'tab-active' : null} onClick=ToDoList.changeTaskView(event) id="open">Open</a>
+          <a class=${isActive === 'closed' ? 'tab-active' : null} onClick=ToDoList.changeTaskView(event) id="closed">Closed</a>
+          <a class=${isActive === 'all' ? 'tab-active' : null} onClick=ToDoList.changeTaskView(event) id="all">All</a>
+        </p>
+        ${this.renderTasks(props)}
+      </nav>
+    </div>`;
+}
+
+function taskItem(props) {
+  const type = props.status;
+  const status = props.status === 'Open' ? `<span class="tag is-primary">Open</span>` : `<span class="tag is-danger">Done</span>`;
+  const action =
+    props.status === 'Closed'
+      ? `<a onClick=ToDoList.openTask(${props._id})><i class="fas fa-undo"></i></a>
+           <a onClick=ToDoList.removeTask(${props._id},'${props.tag}')><i class="fas fa-trash-alt"></i></a>`
+      : `<a onClick=ToDoList.closeTask(${props._id})><i class="fas fa-check"></i></a>
+           <a onClick=ToDoList.removeTask(${props._id},'${props.tag}')><i class="fas fa-trash-alt"></i></a>`;
+
+  return `<div class="panel-block">
+          			<div class="pull-left">
+                  ${status}
+          				<span>${props.title}</span>
+          			</div>
+          			<div class="pull-right">
+          				${action}
+          			</div>
+          		</div>`;
+}
+
+function clearAll(taskView) {
+  const clearLink =
+    taskView === 'closed'
+      ? `<div class='clear-all'>
+          <a onClick=ToDoList.clearAll()>Clear All</a>
+         </div>`
+      : '';
+  return clearLink;
+}
+
+function tagList(props) {
+  this.renderTags = function(props) {
+    var tags = props.map(tag).join('');
+    return `${tags}`;
+  };
+  return `<div class="tags">
+      ${this.renderTags(props)}
+      </div>`;
+}
+
+function tag(props) {
+  const color = props.isActive === true ? props.color : '#a7a7a7';
+  return `<span
+              style="background-color:${color}"
+              id=${props.tag} onClick=ToDoList.changeTagView(event)
+              class="tag">
+                ${props.tag}
+              </span>`;
+}
+
+//
+// Components
+//
+
+
+// Configuration Modal template //
 var modal = function(props) {
+  // Setting up initial settings from state object //
   const duration = props.config.duration / 60 / 1000;
   const isBreak = props.config.break / 60 / 1000;
   const divClass = Clock.state.modalIsActive === true ? 'is-active' : '';
   return `
-  <div class="modal ${divClass}">
-    <div class="modal-background"></div>
-      <div class="modal-content">
-        <div class="box">
-        <h2>Settings</h2>
-        <form onSubmit=Clock.changeSettings(event)>
-          <div class="field">
-            <label class="label">Duration</label>
-            <div class="control">
-              <input class="input" name="duration" type="number" placeholder=${duration}>
+    <div class="modal ${divClass}">
+      <div class="modal-background"></div>
+        <div class="modal-content">
+          <div class="box">
+            <h2>Settings</h2>
+
+          <form onSubmit=Clock.changeSettings(event)>
+            <div class="field">
+              <label class="label">Duration</label>
+              <div class="control">
+                <input class="input" name="duration" type="number" placeholder=${duration}>
+              </div>
             </div>
-          </div>
-          <div class="field">
-            <label class="label">Break</label>
-            <div class="control">
-              <input class="input" type="number" name="break" placeholder=${isBreak}>
+
+            <div class="field">
+              <label class="label">Break</label>
+              <div class="control">
+                <input class="input" type="number" name="break" placeholder=${isBreak}>
+              </div>
             </div>
-          </div>
-            <input class="button" type="submit" value="Save">
-          </div>
-        </form>
-      </div>
-      <button onClick=Clock.toggleView() class="modal-close is-large" aria-label="close"></button>
-  </div>`;
+              <input class="button" type="submit" value="Save">
+            </div>
+
+          </form>
+        </div>
+        <button onClick=Clock.toggleView() class="modal-close is-large" aria-label="close"></button>
+    </div>`;
 };
 
 var Config = function(props) {
+  // Takes state props & passes to modal for updating
   return `<div>
-    <i onClick=Clock.toggleView() class="config-gear fas fa-cog"></i>
-    ${modal(props)}
-    `;
+      <i onClick=Clock.toggleView() class="config-gear fas fa-cog"></i>
+      ${modal(props)}
+      `;
 };
 
-// clock state //
-
+// Clock Component //
 var Clock = new Component(
   function(props) {
+    // Need to remove this to a higher component state //
     this.toggleView = function() {
       this.setState({
         modalIsActive: !this.state.modalIsActive
       });
     };
 
+    // Changes clock configuration //
     this.changeSettings = function(props) {
-      const duration = event.target.elements.duration.value * 1000 * 60;
-      const breakTime = event.target.elements.break.value * 1000 * 60;
-      const obj = { duration: duration, break: breakTime };
+      // Input values from settings changes
+      const duration = event.target.elements.duration.value;
+      const breakTime = event.target.elements.break.value;
+
+      const obj = {
+        duration: duration * 1000 * 60,
+        break: breakTime * 1000 * 60
+      };
 
       this.setState({
         config: obj
@@ -106,20 +236,17 @@ var Clock = new Component(
       localStorage.setItem('config', JSON.stringify(obj));
     };
 
+    // Plays alarm when pomodoro ends //
     this.playMusic = function() {
       const music = document.querySelector('#music');
       music.play();
     };
 
-    // this.pauseMusic = function() {
-    //   const music = document.querySelector('#music');
-    //   music.pause();
-    // };
-
+    // Starts the pomodoro clock when play is pressed //
     this.startClock = function() {
-      if (this.state.intervalId) {
-        return;
-      }
+      // Check whether the clock is already running
+      if (this.state.intervalId) return;
+
       // get the time remaining. use duration if remaining is not set
       const timeRemaining = Clock.state.remaining > 0 ? Clock.state.remaining : Clock.state.config.duration;
       // get time the clock was started or resumed
@@ -131,38 +258,52 @@ var Clock = new Component(
     };
 
     this.endClock = function() {
+      // Utility function to get a new day //
       function getDay(date) {
-        const day = Math.floor(Date.parse(date) / (1000 * 24 * 24 * 60));
-        return day;
+        return Math.floor(Date.parse(date) / (1000 * 24 * 24 * 60));
       }
 
-      if (!this.state.isBreak) {
-        // play ending sound //
-        this.playMusic();
-
-        // clearInterval //
+      if (this.state.isBreak) {
+        // Clear timer intervalId
         clearInterval(this.state.intervalId);
 
-        this.setState({
-          remaining: this.state.config.break,
-          isBreak: true,
-          intervalId: null
-        });
-      } else {
-        clearInterval(this.state.intervalId);
+        // Restart timer completely
         this.setState({
           isOn: false,
           remaining: 0,
           intervalId: '',
           modalIsAcive: false
         });
+      } else {
+        // Check whether clock is starting from scratch
+        // play ending sound //
+        this.playMusic();
+
+        // clear the timer interval  //
+        clearInterval(this.state.intervalId);
+
+        // Change the remaining time to break
+        // Set break to true
+        // Reset clear IntervalId
+        this.setState({
+          remaining: this.state.config.break,
+          isBreak: true,
+          intervalId: null
+        });
       }
     };
 
     this.ticker = function(endTime) {
+      // Update state every second
       const intervalId = setInterval(() => {
+        // Find time remaining by taking static end time minus current time
         const remaining = endTime - Date.parse(new Date());
-        if (remaining >= 0) {
+
+        // If there is time remaining
+        if (remaining < 0) {
+          // End the timer if there
+          this.endClock();
+        } else {
           const minutes = Math.floor((remaining / 1000 / 60) % 60).toString();
           const seconds = Math.floor((remaining / 1000) % 60).toString();
           document.title = `Pommz - ${minutes}:${seconds}`;
@@ -171,18 +312,16 @@ var Clock = new Component(
             isOn: true,
             intervalId: intervalId
           });
-        } else {
-          this.endClock();
         }
       }, 1000);
     };
 
     this.renderClockButtons = function() {
-      if (!this.state.isOn) {
-        return `${startButton()} ${stopButton()}`;
-      } else {
+      // check if timer is off. if so, return start & stop button.
+      if (!this.state.isOn) return `${startButton()} ${stopButton()}`;
+      else
+        // if timer if on. return start & pause button //
         return `${startButton()} ${pauseButton()}`;
-      }
     };
 
     this.stopClock = function() {
@@ -209,39 +348,23 @@ var Clock = new Component(
     };
 
     return `
-    <nav class="navbar is-fixed-top">
-    <div class="timer">
-      <div class="timer-time">
-        <span class="minutes">${Math.floor((this.state.remaining / 1000 / 60) % 60).toString()}</span>:
-        <span class="seconds">${Math.floor((this.state.remaining / 1000) % 60).toString()}</span>
+      <nav class="navbar is-fixed-top">
+      <div class="timer">
+        <div class="timer-time">
+          <span class="minutes">${Math.floor((this.state.remaining / 1000 / 60) % 60).toString()}</span>:
+          <span class="seconds">${Math.floor((this.state.remaining / 1000) % 60).toString()}</span>
+        </div>
+        <div class="timer-control">
+          ${this.renderClockButtons()}
+        </div>
+
       </div>
-      <div class="timer-control">
-        ${this.renderClockButtons()}
-      </div>
-      <div id="config">${Config(this.state)}</div>
-    </div>
-    </nav>
-    `;
+      </nav>
+      `;
   },
   getInitialState(),
   document.querySelector('#clock')
 );
-
-// END Clock Component //
-
-var startButton = function() {
-  return `<i onclick=Clock.startClock() class="fas fa-play small"></i>`;
-};
-
-var pauseButton = function() {
-  return `<i onClick=Clock.pauseClock(event) id="pause" class="fas fa-pause"></i>`;
-};
-
-var stopButton = function() {
-  return `<i onClick=Clock.stopClock(event) class="fas fa-stop"></i>`;
-};
-
-Clock.render();
 
 var ToDoList = new Component(
   function() {
@@ -249,31 +372,31 @@ var ToDoList = new Component(
       var that = this;
       const tagFilter = [];
 
-      this.state.tagView.forEach(function(view) {
-        if (view.isActive !== true) {
-          return;
-        } else {
-          that.state.tasks.forEach(function(task) {
-            if (view.tag === task.tag) {
-              tagFilter.push(task);
-            }
+      // Check actively selected tasks. For each one find all tasks matching it
+      this.state.tagView.forEach(view => {
+        // check if the tag is active. If not, return.
+        if (view.isActive !== true) return;
+        else
+          // For an active tag, find tasks with matching tag & add to array
+          that.state.tasks.forEach(task => {
+            if (view.tag === task.tag) tagFilter.push(task);
           });
-        }
       });
 
-      if (this.state.taskView === 'all') {
-        return tagFilter;
-      }
-      if (this.state.taskView === 'open') {
-        return tagFilter.filter(function(task) {
+      // Return all tasks
+      if (this.state.taskView === 'all') return tagFilter;
+
+      // Return all open tasks
+      if (this.state.taskView === 'open')
+        return tagFilter.filter(task => {
           return task['status'] !== 'Closed';
         });
-      }
-      if (this.state.taskView === 'closed') {
-        return tagFilter.filter(function(task) {
+
+      // Return all closed tasks
+      if (this.state.taskView === 'closed')
+        return tagFilter.filter(task => {
           return task['status'] !== 'Open';
         });
-      }
     };
 
     this.changeTaskView = function(event) {
@@ -284,22 +407,28 @@ var ToDoList = new Component(
     };
 
     this.openTask = function(task) {
+      // Cache state & find index of task
       const state = this.state.tasks;
-      const index = state.findIndex(function(existingTask) {
+      const index = state.findIndex(existingTask => {
         return existingTask['_id'] === task;
       });
 
+      // change task status
       state[index].status = 'Open';
+
+      // set new task state
       this.setState({
         tasks: state,
         taskView: 'open'
       });
+      // save locally
       localStorage.setItem('tasks', JSON.stringify(state));
     };
 
     this.closeTask = function(task) {
+      // cache state find task index
       const state = this.state.tasks;
-      const index = state.findIndex(function(existingTask) {
+      const index = state.findIndex(existingTask => {
         return existingTask['_id'] === task;
       });
       state[index].status = 'Closed';
@@ -335,6 +464,7 @@ var ToDoList = new Component(
         '#FF7C03',
         '#191231'
       ];
+
       const task = event.target.elements.taskname.value;
       const tag = event.target.elements.tagname.value;
 
@@ -383,8 +513,8 @@ var ToDoList = new Component(
     };
 
     this.clearAll = function() {
+      // cached state & filtering closed tasks
       const state = ToDoList.state.tasks;
-
       const newState = state.filter(function(existingTask) {
         return existingTask.status != 'Closed';
       });
@@ -397,21 +527,21 @@ var ToDoList = new Component(
     };
 
     this.changeTagView = function(event) {
+      // tag item & cached tag state
       const item = event.target.id;
-      const newState = this.state.tagView;
-      newState.forEach(function(obj) {
-        if (obj.tag != item) {
-          return;
-        } else {
-          obj.isActive = !obj.isActive;
-        }
+      const tagState = this.state.tagView;
+
+      // Search for clicked tag. Once found reverse state
+      tagState.forEach(obj => {
+        if (obj.tag != item) return;
+        else obj.isActive = !obj.isActive;
       });
 
       this.setState({
-        tagView: newState
+        tagView: tagState
       });
 
-      localStorage.setItem('tagView', JSON.stringify(newState));
+      localStorage.setItem('tagView', JSON.stringify(tagState));
     };
 
     this.removeTask = function(task, tag) {
@@ -423,7 +553,7 @@ var ToDoList = new Component(
         return existingTask['_id'] !== task;
       });
 
-      // remove the task from the tag and remove it if there's no other tasks //
+      // remove the task from the tag and remove it if theres no other tasks //
 
       // get the index of the tag //
       const tagIndex = tagState
@@ -438,7 +568,7 @@ var ToDoList = new Component(
         })
         .indexOf(task);
 
-      // if there's only 1 task on the tag, remove the tag entirely //
+      // if theres only 1 task on the tag, remove the tag entirely //
       const tagTasks = tagState[tagIndex].tasks.length;
 
       if (tagTasks === 1) {
@@ -459,11 +589,11 @@ var ToDoList = new Component(
 
     return `<div class="todo">
 
-		${input()}
-    ${tagList(this.state.tagView)}
-		${taskList(this.renderTasks())}
-    ${clearAll(this.state.taskView)}
-		</div>`;
+  		${input()}
+      ${tagList(this.state.tagView)}
+  		${taskList(this.renderTasks())}
+      ${clearAll(this.state.taskView)}
+  		</div>`;
   },
   {
     tasks: JSON.parse(localStorage.getItem('tasks')) || [],
@@ -473,95 +603,5 @@ var ToDoList = new Component(
   document.querySelector('#todo')
 );
 
-var input = function(props) {
-  return `
-		<form class="todo-input" onsubmit="ToDoList.addTask(event)">
-          <input name="tagname" id="tag-input" placeholder="Tag" class="input is-large" />
-          <span>
-	        <input
-            id="task-input"
-	          placeholder="Add A Task"
-	          name="taskname"
-	          class="input is-large"
-	        />
-          <input style="display:none" type="submit"></input>
-        </span>
-	  </form>
-
-    `;
-};
-
-function taskList(props) {
-  const isActive = ToDoList.state.taskView;
-
-  this.renderTasks = function(props) {
-    var tasks = props.map(taskItem).join('');
-    return `${tasks}`;
-  };
-  return `
-  <div class="open-task-list">
-    <nav class="panel">
-      <p class="panel-tabs">
-        <a class=${isActive === 'open' ? 'tab-active' : null} onClick=ToDoList.changeTaskView(event) id="open">Open</a>
-        <a class=${isActive === 'closed' ? 'tab-active' : null} onClick=ToDoList.changeTaskView(event) id="closed">Closed</a>
-        <a class=${isActive === 'all' ? 'tab-active' : null} onClick=ToDoList.changeTaskView(event) id="all">All</a>
-      </p>
-      ${this.renderTasks(props)}
-    </nav>
-  </div>`;
-}
-
-function taskItem(props) {
-  const type = props.status;
-  const status = props.status === 'Open' ? `<span class="tag is-primary">Open</span>` : `<span class="tag is-danger">Done</span>`;
-  const action =
-    props.status === 'Closed'
-      ? `<a onClick=ToDoList.openTask(${props._id})><i class="fas fa-undo"></i></a>
-         <a onClick=ToDoList.removeTask(${props._id},'${props.tag}')><i class="fas fa-trash-alt"></i></a>`
-      : `<a onClick=ToDoList.closeTask(${props._id})><i class="fas fa-check"></i></a>
-         <a onClick=ToDoList.removeTask(${props._id},'${props.tag}')><i class="fas fa-trash-alt"></i></a>`;
-
-  return `<div class="panel-block">
-        			<div class="pull-left">
-                ${status}
-        				<span>${props.title}</span>
-        			</div>
-        			<div class="pull-right">
-        				${action}
-        			</div>
-        		</div>`;
-}
-
-function clearAll(taskView) {
-  const clearLink =
-    taskView === 'closed'
-      ? `<div class='clear-all'>
-  <a onClick=ToDoList.clearAll()>Clear All</a></div>`
-      : '';
-  return clearLink;
-}
-
-// tagList //
-
-function tagList(props) {
-  this.renderTags = function(props) {
-    var tags = props.map(tag).join('');
-    return `${tags}`;
-  };
-
-  return `<div class="tags">
-    ${this.renderTags(props)}
-    </div>`;
-}
-
-function tag(props) {
-  const color = props.isActive === true ? props.color : '#a7a7a7';
-  return `<span
-            style="background-color:${color}"
-            id=${props.tag} onClick=ToDoList.changeTagView(event)
-            class="tag">
-              ${props.tag}
-            </span>`;
-}
-
+Clock.render();
 ToDoList.render();
