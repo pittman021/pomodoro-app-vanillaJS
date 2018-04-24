@@ -10,14 +10,30 @@ html {
 }
 
 #todo {
-  margin-top: 103px;
-  margin: 103px 20px 10px 20px;
+  margin: 10px 20px 10px 20px;
+}
+
+#content {
+  margin-top: 75px;
+}
+
+#header {
+  text-align: center;
+}
+
+#clock {
+  margin: 0 auto;
 }
 
 /* --- TIMER STYLES --- */
 
 .navbar {
   box-shadow: 0px 2px 7px 0px #dbdbdb;
+}
+
+.navbar.is-fixed-bottom,
+.navbar.is-fixed-top {
+  z-index: 10 !important;
 }
 
 .timer {
