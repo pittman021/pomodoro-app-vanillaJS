@@ -10,7 +10,7 @@ function editTime(time) {
 
 var utils = {
   showModal: function() {
-    var config = JSON.parse(localStorage.getItem('config'));
+    var config = pommzClock.state.config;
     var modalDiv = document.querySelector('#modal');
     modalDiv.innerHTML = modal(config, true);
   },
@@ -35,13 +35,13 @@ var modal = function(props, isActive) {
           <div class="field">
             <label class="label">Duration</label>
             <div class="control">
-              <input class="input" name="duration" type="number" placeholder='${duration} minutes'>
+              <input class="input" value='${duration}' name="duration" type="number" placeholder='${duration} minutes'>
             </div>
           </div>
           <div class="field">
             <label class="label">Break</label>
             <div class="control">
-              <input class="input" type="number" name="break" placeholder='${isBreak} minutes'>
+              <input class="input" value='${isBreak}' type="number" name="break" placeholder='${isBreak} minutes'>
             </div>
           </div>
             <input class="button" type="submit" value="Save">
@@ -52,9 +52,7 @@ var modal = function(props, isActive) {
   </div>`;
 };
 
-var Config = function(props) {
-  var config = JSON.parse(localStorage.getItem('config'));
-  // Takes state props & passes to modal for updating
+var Config = function() {
   return `<div>
       <i onClick=utils.showModal() class="config-gear fas fa-cog"></i>
       `;
@@ -63,6 +61,7 @@ var Config = function(props) {
 // Make public methods available on each module
 // Call those public methods on each module to keep them in sync
 
+// what is this??
 var stats = (function() {
   var state = {};
   var elem = document.querySelector('#stats');
@@ -70,11 +69,14 @@ var stats = (function() {
     return `<span>${state.Completed}</span>`;
   };
 
+  // global render function. takes template literal and element and sets innerHTML.
   function render(template, elem) {
     if (!elem) return;
     elem.innerHTML = typeof template === 'function' ? template() : template;
   }
 
+  // global setState function.
+  // call this to update state and call render function.
   function setState(props, cb) {
     // Shallow merge new properties into state object
     for (var key in props) {
@@ -90,6 +92,8 @@ var stats = (function() {
     return elem;
   }
 
+  // grab tasks from localstorage and set closedTasks counter
+  // return function
   function getInitialState() {
     var tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
@@ -106,6 +110,7 @@ var stats = (function() {
     });
   }
 
+  // evoke initial state function to kick-start project.
   getInitialState();
 
   return {
@@ -113,29 +118,30 @@ var stats = (function() {
   };
 })();
 
-// var header = (function() {
-//   var elem = document.querySelector('#header');
-//
-//   function Home() {}
-//
-//   function render(template, elem) {
-//     if (!elem) return;
-//     elem.innerHTML = typeof template === 'function' ? template() : template;
-//   }
-//   var template = function() {
-//     return `<div>
-//       <span onClick=header.Home();>Home</span>
-//       <span>About</span>
-//       <span>Stats</span>`;
-//   };
-//
-//   render(template, elem);
-//
-//   return {
-//     Home: Home
-//   };
-// })();
+var header = (function() {
+  var elem = document.querySelector('#header');
 
+  function Home() {}
+
+  function render(template, elem) {
+    if (!elem) return;
+    elem.innerHTML = typeof template === 'function' ? template() : template;
+  }
+  var template = function() {
+    return `<div>
+      <span onClick=header.Home();>Home</span>
+      <span>About</span>
+      <span>Stats</span>`;
+  };
+
+  render(template, elem);
+
+  return {
+    Home: Home
+  };
+})();
+
+// Actual Pomodoro Timer containing button controls and config.
 var pommzClock = (function() {
   // App state & vars //
   var state = {};
@@ -167,6 +173,7 @@ var pommzClock = (function() {
         `;
   };
 
+  // Initialize state!
   getInitialState();
 
   //
@@ -307,7 +314,6 @@ var pommzClock = (function() {
   }
 
   // Timer Controls //
-
   function renderClockButtons() {
     // check if timer is off. if so, return start & stop button.
     if (!state.isOn) return `${startButton()} ${stopButton()}`;
@@ -340,12 +346,12 @@ var pommzClock = (function() {
   }
 
   // Templates //
-
   return {
     startClock,
     stopClock,
     pauseClock,
-    changeSettings
+    changeSettings,
+    state
   };
 })();
 
@@ -362,11 +368,11 @@ var todoList = (function() {
                ${input()}
                ${tagList()}
                ${taskList()}
-               ${clearAll()}
+               ${clearAllLink()}
     </div>`;
   };
 
-  var clearAll = function() {
+  var clearAllLink = function() {
     const clearLink =
       state.taskView === 'closed'
         ? `<div class='clear-all'>
@@ -390,11 +396,11 @@ var todoList = (function() {
   var tag = function(props) {
     const color = props.isActive === true ? props.color : '#a7a7a7';
     return `<span
-                    style="background-color:${color}"
-                    id=${props.tag} onClick=todoList.changeTagView(event)
-                    class="tag">
-                      ${props.tag}
-                    </span>`;
+                style="background-color:${color}"
+                id=${props.tag} onClick=todoList.changeTagView(event)
+                class="tag">
+                  ${props.tag}
+                </span>`;
   };
 
   var input = function(props) {
@@ -435,6 +441,7 @@ var todoList = (function() {
 
   var taskItem = function(props) {
     const type = props.status;
+
     const status = props.status === 'Open' ? `<span class="tag is-primary">Open</span>` : `<span class="tag is-danger">Done</span>`;
     const action =
       props.status === 'Closed'
@@ -636,8 +643,8 @@ var todoList = (function() {
 
   function clearAll() {
     // cached state & filtering closed tasks
-    const state = state.tasks;
-    const newState = state.filter(function(existingTask) {
+    const taskState = state.tasks;
+    const newState = taskState.filter(function(existingTask) {
       return existingTask.status != 'Closed';
     });
 
@@ -715,30 +722,7 @@ var todoList = (function() {
     removeTask,
     addTask,
     changeTagView,
-    changeTaskView
+    changeTaskView,
+    clearAll
   };
 })();
-// var button = document.querySelector('.task-item');
-// button.addEventListener('mousedown', drag);
-// document.addEventListener('mouseup', drop);
-//
-// function drag(e) {
-//   console.log(this.style);
-//   this.style.position = 'relative';
-//   this.style.zIndex = 999;
-//
-//   document.addEventListener('mousemove', move);
-//
-//   // var position = e.clientY;
-// }
-//
-// function move(e) {
-//   var y = e.movementY;
-//   console.log(y);
-//   var height = button.offsetHeight;
-//   button.style.top = `${y}px`;
-// }
-//
-// function drop() {
-//   document.removeEventListener('mousemove', move);
-// }

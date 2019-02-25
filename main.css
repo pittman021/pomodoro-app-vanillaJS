@@ -1,12 +1,15 @@
 html {
+  position: relative;
   background-color: #faf8f8 !important;
+  font-family: 'Nunito', serif;
+  color: #888d94;
 }
 
 #main {
-  font-family: 'Nunito', serif;
-  color: #888d94;
-  font-size: 3em;
-  margin-bottom: 20px;
+  min-height: 70%;
+  min-height: -webkit-calc(100% - 206px);
+  min-height: -moz-calc(100% - 206px);
+  min-height: calc(100% - 206px);
 }
 
 #todo {
@@ -33,7 +36,7 @@ html {
 
 .navbar.is-fixed-bottom,
 .navbar.is-fixed-top {
-  z-index: 10 !important;
+  z-index: 10;
 }
 
 .timer {
